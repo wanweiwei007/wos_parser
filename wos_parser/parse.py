@@ -435,7 +435,7 @@ def parse_reference(branch):
 
 
 ##  modified to add vol,issue, has_abstract information
-def parse_vol_issue_hasAbs(branch, global_year, path = pubinfo_path):
+def parse_vol_issue_has_abs(branch, global_year, path = pubinfo_path):
     
     success = True
     
@@ -1003,9 +1003,12 @@ def parse_record(pub, global_year):
     pubtype = parse_pubtype(pub)
     idents = prune_branch(pub, identifiers_path, identifier_path,
                           parse_identifier)
+    
+    #add vol, issue, has_abstract information
+    vol_issue_has_abs = parse_vol_issue_has_abs(pub, pubinfo_path)
 
     success = all(map(lambda y: y[0], [wosid, pubdate,
-                                       authors, pubtype, idents]))
+                                       authors, pubtype, idents,vol_issue_has_abs]))
     if success:
         addresses = prune_branch(pub, add_path, add_spec_path, parse_address)
 
@@ -1056,17 +1059,14 @@ def parse_record(pub, global_year):
 
         page_dict = parse_page(pub, page_path)
 
-        #add vol and issue information
-        volissue_dict = parse_vol_issue_hasAbs(pub, pubinfo_path)
-
         idents_flat = [item for sublist in idents[1] for item in sublist]
 
         prop_dict = {x: y for x, y in idents_flat}
 
-        ## add vlo and issue information
-        prop_dict.update({'vol':volissue_dict[1].get('vol',None)})
-        prop_dict.update({'issue':volissue_dict[1].get('issue',None)})
-        prop_dict.update({'has_abstract':volissue_dict[1].get('has_abstract',None)})
+        ## add vlo, issue, and has_abstract information
+        prop_dict.update({'vol':vol_issue_has_abs[1].get('vol',None)})
+        prop_dict.update({'issue':vol_issue_has_abs[1].get('issue',None)})
+        prop_dict.update({'has_abstract':vol_issue_has_abs[1].get('has_abstract',None)})
 
         prop_dict.update(pubtype[1])
         prop_dict.update(language_dict)
